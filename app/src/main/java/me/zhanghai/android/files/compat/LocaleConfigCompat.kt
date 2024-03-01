@@ -14,13 +14,15 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.XmlRes
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.os.LocaleListCompat
+import org.xmlpull.mxp1.MXParser
+import org.xmlpull.mxp1_serializer.MXSerializer
 import org.xmlpull.v1.XmlPullParser
 import java.io.FileNotFoundException
 
 /**
  * @see android.app.LocaleConfig
  */
-class LocaleConfigCompat(context: Context) {
+class LocaleConfigCompat(context: Context): MXSerializer() {
     var status = 0
         private set
 

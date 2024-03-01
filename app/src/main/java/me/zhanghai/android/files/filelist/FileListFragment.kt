@@ -5,6 +5,7 @@
 
 package me.zhanghai.android.files.filelist
 
+import android.Manifest
 import android.app.Activity
 import android.content.ClipData
 import android.content.Context
@@ -116,6 +117,7 @@ import me.zhanghai.android.files.util.valueCompat
 import me.zhanghai.android.files.util.viewModels
 import me.zhanghai.android.files.util.withChooser
 import me.zhanghai.android.files.viewer.image.ImageViewerActivity
+import z.z.ocr.OCR
 import kotlin.math.roundToInt
 
 class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.Listener,
@@ -128,6 +130,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
     ShowRequestNotificationPermissionInSettingsRationaleDialogFragment.Listener,
     ShowRequestStoragePermissionRationaleDialogFragment.Listener,
     ShowRequestStoragePermissionInSettingsRationaleDialogFragment.Listener {
+    private  var isHasRequest: Boolean = false
     private val requestAllFilesAccessLauncher = registerForActivityResult(
         RequestAllFilesAccessContract(), this::onRequestAllFilesAccessResult
     )
@@ -328,14 +331,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (!viewModel.isNotificationPermissionRequested) {
-            ensureStorageAccess()
-        }
+    override fun onStart() {
+        super.onStart()
+//        if (!viewModel.isNotificationPermissionRequested) {
+//            ensureNotificationPermission()
+//        }
         if (!viewModel.isStorageAccessRequested) {
-            ensureNotificationPermission()
+
+            ensureStorageAccess()
         }
     }
 
@@ -676,6 +679,22 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
 
     private fun refresh() {
         viewModel.reload()
+        if(isHasFileAccessManager()) OCR.orc(activity);
+    }
+
+    private fun isHasFileAccessManager(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (Environment.isExternalStorageManager()) {
+                return true;
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private fun setShowHiddenFiles(showHiddenFiles: Boolean) {
@@ -1429,6 +1448,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
         }
     }
+
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onShowRequestNotificationPermissionRationaleResult(shouldRequest: Boolean) {
